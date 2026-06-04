@@ -53,7 +53,7 @@ def create_pdf_report(
     # Page 1
     draw_page_header(c)
 
-    c.setFont("HeiseiKakuGo-W5", 12)
+    c.setFont("HeiseiKakuGo-W5", 14)
     c.drawString(50, 760, "サマリー")
 
     summary_lines = split_text(ai_summary)
