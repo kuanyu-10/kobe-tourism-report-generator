@@ -1,4 +1,63 @@
 from openpyxl import Workbook
+from openpyxl.styles import (
+    Font,
+    PatternFill,
+    Border,
+    Side,
+    Alignment
+)
+
+def adjust_column_width(ws):
+
+    for column_cells in ws.columns:
+
+        max_length = 0
+
+        column_letter = column_cells[0].column_letter
+
+        for cell in column_cells:
+
+            if cell.value is not None:
+
+                value_length = len(str(cell.value))
+
+                if value_length > max_length:
+                    max_length = value_length
+
+        ws.column_dimensions[column_letter].width = max_length + 2
+
+def apply_border(ws):
+
+    thin_border = Border(
+        left=Side(style="thin"),
+        right=Side(style="thin"),
+        top=Side(style="thin"),
+        bottom=Side(style="thin")
+    )
+
+    for row in ws.iter_rows():
+
+        for cell in row:
+
+            if cell.value is not None:
+
+                cell.border = thin_border
+
+
+def apply_alignment(ws):
+
+    center_alignment = Alignment(
+        horizontal="center",
+        vertical="center"
+    )
+
+    for row in ws.iter_rows():
+
+        for cell in row:
+
+            if cell.value is not None:
+
+                cell.alignment = center_alignment
 
 
 def create_excel_report(
@@ -15,6 +74,17 @@ def create_excel_report(
 
     ws["A1"] = "KPI"
     ws["B1"] = "Value"
+
+    header_fill = PatternFill(
+    fill_type="solid",
+    fgColor="4472C4"
+)
+
+    ws["A1"].font = Font(bold=True)
+    ws["B1"].font = Font(bold=True)
+    ws["A1"].fill = header_fill
+    ws["B1"].fill = header_fill
+
 
     ws["A2"] = "総スポット数"
     ws["B2"] = kpi["total_spots"]
@@ -37,6 +107,9 @@ def create_excel_report(
         "平均評価",
         "総レビュー数"
     ])
+    for cell in area_ws[1]:
+        cell.font = Font(bold=True)
+        cell.fill = header_fill
 
     for _, row in area_df.iterrows():
         area_ws.append([
@@ -55,6 +128,9 @@ def create_excel_report(
         "総レビュー数",
         "平均Popularity Score"
     ])
+    for cell in category_ws[1]:
+        cell.font = Font(bold=True)
+        cell.fill = header_fill
 
     for _, row in category_df.iterrows():
 
@@ -67,7 +143,7 @@ def create_excel_report(
         ])
 
 
-        # Top10 Ranking Sheet
+    # Top10 Ranking Sheet
     top10_ws = wb.create_sheet("Top10 Ranking")
 
     top10_ws.append([
@@ -79,7 +155,9 @@ def create_excel_report(
         "レビュー数",
         "Popularity Score"
     ])
-
+    for cell in top10_ws[1]:
+        cell.font = Font(bold=True)
+        cell.fill = header_fill
 
     for rank, (_, row) in enumerate(
             top10_df.iterrows(),
@@ -96,6 +174,10 @@ def create_excel_report(
             row["popularity_score"]
         ])
 
-    wb.save(
-        "output/kobe_tourism_report.xlsx"
-    )
+    for ws in wb.worksheets:
+        adjust_column_width(ws)
+        apply_border(ws)
+        apply_alignment(ws)
+
+
+    wb.save("output/kobe_tourism_report.xlsx")
